@@ -1,0 +1,5 @@
+Fix a heap-buffer-overflow in the JIT trace frontend: when a concurrent
+executor insertion rewrote an already-traced instruction to
+``ENTER_EXECUTOR``, ``_PyJit_translate_single_bytecode_to_trace`` used the
+recorded instruction operand as the executor index. The index is now taken
+from the live instruction, which always holds it.

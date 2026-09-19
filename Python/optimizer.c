@@ -706,7 +706,11 @@ _PyJit_translate_single_bytecode_to_trace(
     }
 
     if (opcode == ENTER_EXECUTOR) {
-        _PyExecutorObject *executor = old_code->co_executors->executors[oparg & 255];
+        /* The instruction may have been rewritten to ENTER_EXECUTOR by another
+         * thread after instr_oparg was recorded. The executor index therefore
+         * has to come from the live instruction, not the recorded operand. */
+        _PyExecutorObject *executor =
+            old_code->co_executors->executors[this_instr->op.arg];
         opcode = executor->vm_data.opcode;
         oparg = (oparg & ~255) | executor->vm_data.oparg;
     }
