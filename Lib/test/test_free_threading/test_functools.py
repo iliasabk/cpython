@@ -1,10 +1,40 @@
 import random
 import unittest
 
-from functools import lru_cache
+from functools import lru_cache, partial
 from threading import Barrier, Thread
 
 from test.support import threading_helper
+
+@threading_helper.requires_working_threading()
+class TestPartial(unittest.TestCase):
+
+    def test_concurrent_setstate(self):
+        # gh-157841: concurrent __setstate__ must not race with
+        # repr(), calls or another __setstate__.
+        num_readers = 4
+        num_writers = 2
+        num_threads = num_readers + num_writers
+        b = Barrier(num_threads)
+        p = partial(min, 1, 2)
+
+        def reader_func():
+            b.wait()
+            for _ in range(200):
+                repr(p)
+                p()
+
+        def writer_func():
+            b.wait()
+            for i in range(200):
+                p.__setstate__((min, (i, i + 1), {}, None))
+
+        threads = [Thread(target=reader_func) for _ in range(num_readers)]
+        threads += [Thread(target=writer_func) for _ in range(num_writers)]
+
+        with threading_helper.start_threads(threads):
+            pass
+
 
 @threading_helper.requires_working_threading()
 class TestLRUCache(unittest.TestCase):

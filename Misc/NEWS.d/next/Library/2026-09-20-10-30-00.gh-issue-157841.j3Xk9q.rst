@@ -1,0 +1,4 @@
+Fix a crash in the :term:`free-threaded <free threading>` build when
+:meth:`functools.partial.__setstate__ <object.__setstate__>` runs
+concurrently with :func:`repr` or calls of the same ``partial`` object:
+field replacement and all readers now synchronize on the object lock.
