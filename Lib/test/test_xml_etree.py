@@ -2965,6 +2965,25 @@ class BugsTest(unittest.TestCase):
         self.assertIsInstance(e[0].tag, str)
         self.assertEqual(e[0].tag, 'changed')
 
+    def test_iter_tag_reentrant_replace(self):
+        # gh-158032: a tag __eq__ that replaces elem.tag re-entrantly
+        # must not leave the comparison using a freed tag.
+        class Tag:
+            def __eq__(self, other):
+                child.tag = 'replaced'
+                return NotImplemented
+            __hash__ = object.__hash__
+
+        class Sought:
+            def __eq__(self, other):
+                return NotImplemented
+
+        root = ET.Element('root')
+        child = ET.SubElement(root, 'x')
+        child.tag = Tag()
+        self.assertEqual(list(root.iter(Sought())), [])
+        self.assertEqual(child.tag, 'replaced')
+
     def check_expat224_utf8_bug(self, text):
         xml = b'<a b="%s"/>' % text
         root = ET.XML(xml)

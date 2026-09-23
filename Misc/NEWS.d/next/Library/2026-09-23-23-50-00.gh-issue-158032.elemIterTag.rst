@@ -1,0 +1,5 @@
+Fix use-after-free in :meth:`Element.iter() <xml.etree.ElementTree.Element.iter>`
+with a tag argument: the tag comparison could run code that replaced the
+element's tag (for example a custom ``__eq__``), leaving the comparison
+using freed memory.  A strong reference is now held for the duration of
+the comparison.
