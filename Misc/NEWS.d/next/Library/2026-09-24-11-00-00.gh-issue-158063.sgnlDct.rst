@@ -1,0 +1,5 @@
+Fix a crash in :mod:`decimal` where comparing a ``SignalDict`` (for
+example ``Context().flags``) against a non-dict object such as ``None``
+read out of bounds of the operand, reported by AddressSanitizer as a
+global-buffer-overflow in ``signaldict_richcompare``. Comparing against
+an empty dict now returns ``False`` instead of raising ``ValueError``.

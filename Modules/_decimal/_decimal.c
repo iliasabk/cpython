@@ -795,12 +795,15 @@ signaldict_richcompare(PyObject *v, PyObject *w, int op)
     decimal_state *state = get_module_state_by_def(Py_TYPE(v));
     assert(PyDecSignalDict_Check(state, v));
 
-    if ((SdFlagAddr(v) == NULL) || (SdFlagAddr(w) == NULL)) {
+    if (SdFlagAddr(v) == NULL) {
         return value_error_ptr(INVALID_SIGNALDICT_ERROR_MSG);
     }
 
     if (op == Py_EQ || op == Py_NE) {
         if (PyDecSignalDict_Check(state, w)) {
+            if (SdFlagAddr(w) == NULL) {
+                return value_error_ptr(INVALID_SIGNALDICT_ERROR_MSG);
+            }
             res = (SdFlags(v)==SdFlags(w)) ^ (op==Py_NE) ? Py_True : Py_False;
         }
         else if (PyAnyDict_Check(w)) {

@@ -4026,6 +4026,15 @@ class ContextFlags:
         self.assertNotEqual(d, c.flags)
         self.assertNotEqual(c.flags, d)
 
+        # gh-158063: non-dict comparisons must not crash or read out
+        # of bounds (the C version accessed the flags field of
+        # PyDecSignalDictObject in arbitrary other-type operands).
+        self.assertNotEqual(c.flags, None)
+        self.assertNotEqual(c.flags, 42)
+        self.assertNotEqual(c.flags, {})
+        with self.assertRaises(TypeError):
+            c.flags < None
+
     @requires_IEEE_754
     def test_float_operation(self):
         Decimal = self.decimal.Decimal
